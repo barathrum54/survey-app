@@ -32,3 +32,4 @@ packages/
 ## Others
 *.cache
 *.dbmdl
+**/appsettings.*.local.json
