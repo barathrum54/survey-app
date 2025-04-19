@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMapConfig xmlns="http://ibatis.apache.org/dataMapper">
+  <settings>
+    <setting useStatementNamespaces="true" />
+  </settings>
+  <providers resource="Data/Mappers/providers.config" />
+  <database>
+    <dataSource name="PostgreSqlDS"
+                connectionString="Host=localhost;Port=15432;Username=survey;Password=survey123;Database=surveydb"
+                provider="postgresql" />
+  </database>
+  <sqlMaps>
+    <sqlMap resource="Data/Mappers/User.xml" />
+  </sqlMaps>
+</sqlMapConfig>
