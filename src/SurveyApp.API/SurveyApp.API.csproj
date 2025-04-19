@@ -6,5 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="IBatisNet.DataMapper">
+      <HintPath>lib/IBatisNet.DataMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="IBatisNet.Common">
+      <HintPath>lib/IBatisNet.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Data/Mappers/*.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
