@@ -1,20 +1,32 @@
-private readonly IIbatisService _ibatis;
+using Microsoft.AspNetCore.Mvc;
+using SurveyApp.API.Services.IBatis;
+using SurveyApp.API.Models;
 
-public IbatisTestController(IIbatisService ibatis)
+namespace SurveyApp.API.Controllers
 {
-    _ibatis = ibatis;
-}
+    [ApiController]
+    [Route("api/[controller]")]
+    public class IbatisTestController : ControllerBase
+    {
+        private readonly IIbatisService _ibatis;
 
-[HttpGet("ping")]
-public IActionResult Ping()
-{
-    try
-    {
-        var mapper = _ibatis.Mapper;
-        return Ok("IBATIS initialized via service.");
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"IBATIS error: {ex.Message}");
+        public IbatisTestController(IIbatisService ibatis)
+        {
+            _ibatis = ibatis;
+        }
+
+        [HttpGet("ping")]
+        public IActionResult Ping()
+        {
+            var mapper = _ibatis.Mapper;
+            return Ok("IBATIS initialized via service.");
+        }
+
+        [HttpGet("users")]
+        public IActionResult GetUsers()
+        {
+            var users = _ibatis.Mapper.QueryForList<User>("User.SelectAll", null);
+            return Ok(users);
+        }
     }
 }

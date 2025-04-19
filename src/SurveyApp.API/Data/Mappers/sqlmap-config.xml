@@ -5,9 +5,10 @@
   </settings>
   <providers resource="Data/Mappers/providers.config" />
   <database>
-    <dataSource name="PostgreSqlDS"
-                connectionString="Host=localhost;Port=15432;Username=survey;Password=survey123;Database=surveydb"
-                provider="postgresql" />
+    <provider name="sqlserver" />
+    <dataSource
+      name="SqlServerDS"
+      connectionString="Server=sqlserver;Database=surveydb;User Id=sa;Password=Your_strong(!)Passw0rd" />
   </database>
   <sqlMaps>
     <sqlMap resource="Data/Mappers/User.xml" />
