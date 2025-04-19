@@ -1,3 +1,5 @@
+using SurveyApp.API.Services.IBatis;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
