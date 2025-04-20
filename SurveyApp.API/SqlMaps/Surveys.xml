@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sqlMap namespace="Surveys"
+        xmlns="http://ibatis.apache.org/mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <statements>
+
+    <insert id="Insert" parameterClass="SurveyApp.API.Models.Survey">
+      <![CDATA[
+        INSERT INTO Surveys (Title, CreatedBy, CreatedAt)
+        VALUES (#Title#, #CreatedBy#, #CreatedAt#)
+      ]]>
+      <selectKey property="Id" type="post" resultClass="int">
+        SELECT CAST(SCOPE_IDENTITY() AS int)
+      </selectKey>
+    </insert>
+
+
+    <select id="GetById" resultClass="SurveyApp.API.Models.Survey">
+      <![CDATA[
+        SELECT Id, Title, CreatedBy, CreatedAt
+        FROM Surveys
+        WHERE Id = #value#
+      ]]>
+    </select>
+    <select id="GetByTitle" parameterClass="string" resultClass="SurveyApp.API.Models.Survey">
+      <![CDATA[
+        SELECT TOP 1 Id, Title, CreatedBy, CreatedAt
+        FROM Surveys
+        WHERE Title = #value#
+        ORDER BY Id DESC
+      ]]>
+    </select>
+    <select id="GetAll" resultClass="SurveyApp.API.Models.Survey">
+      <![CDATA[
+        SELECT Id, Title, CreatedBy, CreatedAt FROM Surveys
+      ]]>
+    </select>
+
+  </statements>
+</sqlMap>
