@@ -24,6 +24,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
 // 🔐 JWT Authentication
 builder.Services.AddAuthentication(options =>

@@ -1,7 +1,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SurveyApp.API.Common;
+using SurveyApp.API.DTOs;
 using SurveyApp.API.DAOs.Interfaces;
 using SurveyApp.API.Services.Interfaces;
 
