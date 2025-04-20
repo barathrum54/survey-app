@@ -74,4 +74,48 @@ public class SurveyControllerTests : IClassFixture<DatabaseFixture>
     Assert.NotNull(result);
     Assert.All(result!, s => Assert.Equal(5, s.CreatedBy));
   }
+  [Fact]
+  public async Task DeleteSurvey_ShouldReturnNoContent_WhenUserIsOwner()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var createRequest = new CreateSurveyRequest
+    {
+      Title = "Survey To Delete",
+      Options = new List<string> { "Option 1", "Option 2" }
+    };
+
+    var createResponse = await _client.PostAsJsonAsync("/Survey", createRequest);
+    createResponse.EnsureSuccessStatusCode();
+    var created = await createResponse.Content.ReadFromJsonAsync<Survey>();
+
+    var deleteResponse = await _client.DeleteAsync($"/Survey/{created!.Id}");
+    Assert.Equal(System.Net.HttpStatusCode.NoContent, deleteResponse.StatusCode);
+  }
+
+  [Fact]
+  public async Task DeleteSurvey_ShouldReturnForbidden_WhenUserIsNotOwner()
+  {
+    // Login as the owner
+    var ownerToken = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+
+    // Create a survey owned by the owner
+    var request = new CreateSurveyRequest
+    {
+      Title = "Other's Survey",
+      Options = new List<string> { "A", "B" }
+    };
+    var createResponse = await _client.PostAsJsonAsync("/Survey", request);
+    createResponse.EnsureSuccessStatusCode();
+    var created = await createResponse.Content.ReadFromJsonAsync<Survey>();
+
+    var attackerToken = await _client.LoginAndGetTokenAsync("admin", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", attackerToken);
+
+    var response = await _client.DeleteAsync($"/Survey/{created!.Id}");
+
+    Assert.Equal(System.Net.HttpStatusCode.Forbidden, response.StatusCode);
+  }
 }

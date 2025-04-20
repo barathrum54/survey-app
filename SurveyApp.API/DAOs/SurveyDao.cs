@@ -46,4 +46,9 @@ public class SurveyDao : ISurveyDao
   {
     return _mapper.QueryForList<Survey>("Surveys.GetByUserId", userId);
   }
+  public void DeleteById(int id)
+  {
+    Console.WriteLine($"📤 Deleting Survey with ID: {id}");
+    _mapper.Delete("Surveys.DeleteById", id);
+  }
 }

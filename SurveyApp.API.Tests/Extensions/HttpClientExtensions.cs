@@ -26,6 +26,8 @@ public static class HttpClientExtensions
     if (apiResponse == null || string.IsNullOrWhiteSpace(apiResponse.Data))
       throw new Exception("Login failed: token not returned");
 
+    Console.WriteLine($"Token for {username}: {apiResponse.Data}");
+
     return apiResponse.Data;
   }
 }

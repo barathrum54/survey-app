@@ -8,5 +8,6 @@ public interface ISurveyDao
   Survey? GetById(int id);
   IEnumerable<Survey> GetAll();
   IEnumerable<Survey> GetByUserId(int userId);
+  void DeleteById(int id);
 
 }

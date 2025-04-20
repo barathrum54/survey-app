@@ -42,6 +42,11 @@
         WHERE CreatedBy = #value#
       ]]>
     </select>
+    <delete id="DeleteById" parameterClass="int">
+      <![CDATA[
+        DELETE FROM Surveys WHERE Id = #value#
+      ]]>
+    </delete>
 
   </statements>
 </sqlMap>
