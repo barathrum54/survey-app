@@ -1,36 +1,84 @@
 using System.Reflection;
-using SqlBatis.DataMapper.DependencyInjection;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using SurveyApp.API.Configuration;
 using SurveyApp.API.DAOs;
 using SurveyApp.API.DAOs.Interfaces;
+using SqlBatis.DataMapper.DependencyInjection;
+using SurveyApp.API.Services;
+using SurveyApp.API.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ----------------------
+// 🔧 Configuration Setup
+// ----------------------
+var jwtSettings = new JwtSettings();
+builder.Configuration.GetSection("Jwt").Bind(jwtSettings);
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
+// ----------------------
+// 🧩 Service Registration
+// ----------------------
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// 🔐 JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+    };
+});
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
+
+// 🗄️ iBATIS Mapper
 builder.Services.AddSqlMapper(options =>
     builder.Configuration.GetSection("DB").Bind(options));
 
+// 🧪 Scoped DAOs
 builder.Services.AddScoped<IUserDao, UserDao>();
-builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ----------------------
+// 🚀 Middleware Pipeline
+// ----------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapControllers();
-app.UseHttpsRedirection();
 
-// List embedded resources for debugging
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+// ----------------------
+// 🛠️ Debug: Embedded Resources
+// ----------------------
 var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-Console.WriteLine("🔍 Embedded Resources:");
+Console.WriteLine("\uD83D\uDD0D Embedded Resources:");
 foreach (var name in resourceNames)
 {
     Console.WriteLine($"  - {name}");
 }
+
 app.Run();
