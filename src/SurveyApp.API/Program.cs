@@ -9,7 +9,7 @@ builder.Services.AddSingleton<IIbatisService, IbatisService>();
 
 var app = builder.Build();
 
-builder.WebHost.UseUrls("http://0.0.0.0:5000"); 
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

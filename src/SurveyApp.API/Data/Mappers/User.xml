@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<sqlMap namespace="User" xmlns="http://ibatis.apache.org/mapping">
+<sqlMap namespace="User"
+        xmlns="http://ibatis.apache.org/mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <resultMaps>
+    <resultMap id="UserResult" class="SurveyApp.API.Models.User">
+      <result property="Id" column="Id"/>
+      <result property="Username" column="Username"/>
+    </resultMap>
+  </resultMaps>
+
+  <statements>
+    <select id="GetUserById" parameterClass="int" resultMap="UserResult">
+      SELECT Id, Username FROM Users WHERE Id = #value#
+    </select>
+  </statements>
+
 </sqlMap>
