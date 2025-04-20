@@ -42,4 +42,8 @@ public class SurveyDao : ISurveyDao
   {
     return _mapper.QueryForList<Survey>("Surveys.GetAll", null);
   }
+  public IEnumerable<Survey> GetByUserId(int userId)
+  {
+    return _mapper.QueryForList<Survey>("Surveys.GetByUserId", userId);
+  }
 }

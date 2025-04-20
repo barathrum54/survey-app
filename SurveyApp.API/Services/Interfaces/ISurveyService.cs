@@ -7,5 +7,7 @@ public interface ISurveyService
 {
   Survey CreateSurvey(CreateSurveyRequest request, int userId);
   SurveyWithOptionsResponse? GetSurveyById(int id);
+  IEnumerable<SurveyWithOptionsResponse> GetSurveysByUserId(int userId);
+
 
 }

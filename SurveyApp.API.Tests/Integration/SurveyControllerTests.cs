@@ -8,6 +8,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace SurveyApp.API.Tests.Integration;
+
 public class SurveyControllerTests : IClassFixture<DatabaseFixture>
 {
   private readonly HttpClient _client;
@@ -34,14 +35,12 @@ public class SurveyControllerTests : IClassFixture<DatabaseFixture>
     var response = await _client.PostAsJsonAsync("/Survey", request);
     var content = await response.Content.ReadAsStringAsync();
 
-    _output.WriteLine("🔴 Raw Response:");
-    _output.WriteLine(content); // ✅ this will now appear in the test output
-
     response.EnsureSuccessStatusCode();
     var result = await response.Content.ReadFromJsonAsync<Survey>();
     Assert.NotNull(result);
     Assert.Equal(request.Title, result!.Title);
   }
+
   [Fact]
   public async Task CreateSurvey_ShouldReturnBadRequest_WhenOptionsInvalid()
   {
@@ -57,5 +56,22 @@ public class SurveyControllerTests : IClassFixture<DatabaseFixture>
     var response = await _client.PostAsJsonAsync("/Survey", request);
 
     Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+  }
+
+  [Fact]
+  public async Task GetMySurveys_ShouldReturnOnlyOwnedSurveys()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var response = await _client.GetAsync("/Survey/me");
+    var content = await response.Content.ReadAsStringAsync();
+    _output.WriteLine("🔴 Raw Response:\n" + content);
+
+    response.EnsureSuccessStatusCode();
+
+    var result = await response.Content.ReadFromJsonAsync<List<Survey>>();
+    Assert.NotNull(result);
+    Assert.All(result!, s => Assert.Equal(5, s.CreatedBy));
   }
 }

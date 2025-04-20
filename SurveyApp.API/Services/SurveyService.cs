@@ -63,6 +63,24 @@ public class SurveyService : ISurveyService
       }).ToList()
     };
   }
+  public IEnumerable<SurveyWithOptionsResponse> GetSurveysByUserId(int userId)
+  {
+    var surveys = _surveyDao.GetByUserId(userId);
+    return surveys.Select(survey => new SurveyWithOptionsResponse
+    {
+      Id = survey.Id,
+      Title = survey.Title,
+      CreatedBy = survey.CreatedBy,
+      CreatedAt = survey.CreatedAt,
+      Options = _optionDao.GetBySurveyId(survey.Id)
+        .Select(o => new OptionResponse
+        {
+          Id = o.Id,
+          Text = o.Text,
+          SurveyId = o.SurveyId
+        }).ToList()
+    });
+  }
 
 
 }
