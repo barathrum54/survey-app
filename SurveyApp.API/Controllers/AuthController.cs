@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
       return Unauthorized(ApiResponse<string>.Fail("Invalid username or password"));
     }
 
-    var token = _jwtTokenService.GenerateToken(Guid.NewGuid(), user.Username);
+    var token = _jwtTokenService.GenerateToken(user.Id, user.Username);
     return Ok(ApiResponse<string>.Ok(token, "Login successful"));
   }
 

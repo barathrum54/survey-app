@@ -41,7 +41,7 @@ public class TestController : ControllerBase
   [HttpPost("token")]
   public IActionResult GetToken()
   {
-    var token = _jwtTokenService.GenerateToken(Guid.NewGuid(), "testuser");
+    var token = _jwtTokenService.GenerateToken(1, "testuser"); // Replace Guid.NewGuid() with an integer value
     return Ok(ApiResponse<string>.Ok(token));
   }
   [HttpPost("survey")]

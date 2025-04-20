@@ -25,6 +25,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
 
 // 🔐 JWT Authentication
 builder.Services.AddAuthentication(options =>

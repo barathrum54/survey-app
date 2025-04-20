@@ -17,12 +17,13 @@ public class JwtTokenService : IJwtTokenService
     _settings = options.Value;
   }
 
-  public string GenerateToken(Guid userId, string username)
+  public string GenerateToken(int userId, string username)
   {
     var claims = new[]
     {
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, username),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
         };
 
     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
