@@ -74,5 +74,11 @@ public class TestController : ControllerBase
 
     return Ok(result);
   }
+  [HttpGet("trigger-error")]
+  public IActionResult TriggerError()
+  {
+    // This will simulate an unhandled exception
+    throw new Exception("This is a test exception for global error handling.");
+  }
 
 }

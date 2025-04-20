@@ -8,6 +8,7 @@ using SurveyApp.API.DAOs.Interfaces;
 using SqlBatis.DataMapper.DependencyInjection;
 using SurveyApp.API.Services;
 using SurveyApp.API.Services.Interfaces;
+using SurveyApp.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseMiddleware<ExceptionMiddleware>();
 
 // ----------------------
 // 🛠️ Debug: Embedded Resources
