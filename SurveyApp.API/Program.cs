@@ -19,7 +19,7 @@ builder.Configuration.GetSection("Jwt").Bind(jwtSettings);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
 // ----------------------
-// 🧩 Service Registration
+// 🥉 Service Registration
 // ----------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -41,10 +41,11 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+        ClockSkew = TimeSpan.Zero
     };
 });
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
 
@@ -75,10 +76,11 @@ app.MapControllers();
 // 🛠️ Debug: Embedded Resources
 // ----------------------
 var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-Console.WriteLine("\uD83D\uDD0D Embedded Resources:");
+Console.WriteLine("🔍 Embedded Resources:");
 foreach (var name in resourceNames)
 {
     Console.WriteLine($"  - {name}");
 }
 
 app.Run();
+public partial class Program { }
