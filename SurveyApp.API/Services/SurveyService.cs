@@ -81,6 +81,16 @@ public class SurveyService : ISurveyService
         }).ToList()
     });
   }
+  public void DeleteSurvey(int id, int userId)
+  {
+    var survey = _surveyDao.GetById(id);
+    if (survey == null)
+      throw new KeyNotFoundException("Survey not found.");
+    if (survey.CreatedBy != userId)
+      throw new UnauthorizedAccessException("Not allowed to delete this survey.");
+
+    _surveyDao.DeleteById(id);
+  }
 
 
 }

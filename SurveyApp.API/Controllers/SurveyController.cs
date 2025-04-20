@@ -51,5 +51,23 @@ public class SurveyController : ControllerBase
     var surveys = _surveyService.GetSurveysByUserId(userId);
     return Ok(surveys);
   }
+  [HttpDelete("{id}")]
+  public IActionResult DeleteSurvey(int id)
+  {
+    try
+    {
+      var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      _surveyService.DeleteSurvey(id, userId);
+      return NoContent();
+    }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
+    catch (UnauthorizedAccessException)
+    {
+      return Forbid();
+    }
+  }
 
 }
