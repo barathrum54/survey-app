@@ -1,0 +1,5 @@
+{
+  "diagnosticMessages": true,
+  "captureOutput": true,
+  "maxParallelThreads": 1
+}

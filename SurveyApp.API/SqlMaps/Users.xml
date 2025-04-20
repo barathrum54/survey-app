@@ -7,16 +7,16 @@
 
     <select id="GetByUsername" resultClass="SurveyApp.API.Models.User">
       <![CDATA[
-        SELECT Id, Username, PasswordHash
+        SELECT Id, Username, PasswordHash, Email
         FROM Users
         WHERE Username = #value#
       ]]>
     </select>
 
-    <insert id="Insert">
+    <insert id="Insert" parameterClass="SurveyApp.API.Models.User">
       <![CDATA[
-        INSERT INTO Users (Username, PasswordHash)
-        VALUES (#Username#, #PasswordHash#)
+        INSERT INTO Users (Username, PasswordHash, Email)
+        VALUES (#Username#, #PasswordHash#, #Email#)
       ]]>
       <selectKey property="Id" type="post" resultClass="int">
         SELECT CAST(SCOPE_IDENTITY() AS int)
