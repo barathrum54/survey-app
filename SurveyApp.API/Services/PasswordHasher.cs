@@ -13,4 +13,9 @@ public class PasswordHasher : IPasswordHasher
     var hash = sha256.ComputeHash(bytes);
     return Convert.ToBase64String(hash);
   }
+
+  public bool Verify(string password, string hashed)
+  {
+    return Hash(password) == hashed;
+  }
 }
