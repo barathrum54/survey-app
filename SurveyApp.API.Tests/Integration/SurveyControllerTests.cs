@@ -170,8 +170,9 @@ namespace SurveyApp.API.Tests.Integration
       // Deserialize the response into a list of SurveyResult
       var results = await resultsResponse.Content.ReadFromJsonAsync<List<SurveyResult>>();
       Assert.NotNull(results);
-      Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 1); // Option A should have 1 vote
-      Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1); // Option B should have 1 vote
+      Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option A should have 1 vote (50%)
+      Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option B should have 1 vote (50%)
     }
+
   }
 }

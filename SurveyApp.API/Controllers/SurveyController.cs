@@ -80,7 +80,6 @@ namespace SurveyApp.API.Controllers
       }
     }
 
-    // Get Survey Results (Aggregated Votes)
     [HttpGet("{id}/results")]
     [AllowAnonymous]
     public IActionResult GetSurveyResults(int id)
@@ -92,12 +91,20 @@ namespace SurveyApp.API.Controllers
       }
 
       var votes = _voteService.GetVotesBySurveyId(id);
+      var totalVotes = votes.Count();
+
+      if (totalVotes == 0)
+      {
+        return Ok(new List<SurveyResult>());  // No votes, return an empty list
+      }
+
       var results = votes
           .GroupBy(vote => vote.OptionId)
-          .Select(group => new
+          .Select(group => new SurveyResult
           {
             OptionId = group.Key,
-            VoteCount = group.Count()
+            VoteCount = group.Count(),
+            Percentage = (double)group.Count() / totalVotes * 100
           })
           .ToList();
 
