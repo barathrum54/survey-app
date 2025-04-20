@@ -57,4 +57,29 @@ public class SurveyServiceTests : IClassFixture<DatabaseFixture>
     var ex = Assert.Throws<ArgumentException>(() => _surveyService.CreateSurvey(request, userId: 1));
     Assert.Equal("Survey must contain between 2 and 5 options.", ex.Message);
   }
+  [Fact]
+  public void GetSurveyById_WithValidId_ShouldReturnSurveyWithOptions()
+  {
+    var request = new CreateSurveyRequest
+    {
+      Title = "GetSurvey Test",
+      Options = new List<string> { "Option A", "Option B" }
+    };
+
+    var created = _surveyService.CreateSurvey(request, userId: 1);
+
+    var result = _surveyService.GetSurveyById(created.Id);
+
+    Assert.NotNull(result);
+    Assert.Equal(created.Id, result.Id);
+    Assert.Equal(request.Title, result.Title);
+    Assert.Equal(2, result.Options.Count);
+  }
+
+  [Fact]
+  public void GetSurveyById_WithInvalidId_ShouldReturnNull()
+  {
+    var result = _surveyService.GetSurveyById(-999);
+    Assert.Null(result);
+  }
 }

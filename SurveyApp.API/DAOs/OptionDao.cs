@@ -45,4 +45,8 @@ public class OptionDao : IOptionDao
   {
     return _mapper.QueryForList<Option>("Options.GetAll", null);
   }
+  public IEnumerable<Option> GetBySurveyId(int surveyId)
+  {
+    return _mapper.QueryForList<Option>("Options.GetBySurveyId", surveyId);
+  }
 }
