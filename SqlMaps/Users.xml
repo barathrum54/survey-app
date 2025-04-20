@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sqlMap namespace="Users"
+        xmlns="http://ibatis.apache.org/mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <statements>
+
+    <select id="GetByUsername" resultClass="SurveyApp.API.Models.User">
+      <![CDATA[
+        SELECT Id, Username, PasswordHash
+        FROM Users
+        WHERE Username = #value#
+      ]]>
+    </select>
+
+    <insert id="Insert">
+      <![CDATA[
+        INSERT INTO Users (Username, PasswordHash)
+        VALUES (#Username#, #PasswordHash#)
+      ]]>
+      <selectKey property="Id" type="post" resultClass="int">
+        SELECT CAST(SCOPE_IDENTITY() AS int)
+      </selectKey>
+    </insert>
+
+  </statements>
+</sqlMap>
