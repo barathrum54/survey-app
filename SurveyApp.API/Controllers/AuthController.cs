@@ -12,11 +12,26 @@ public class AuthController : ControllerBase
 {
   private readonly IUserDao _userDao;
   private readonly IPasswordHasher _passwordHasher;
+  private readonly IJwtTokenService _jwtTokenService;
 
-  public AuthController(IUserDao userDao, IPasswordHasher passwordHasher)
+  public AuthController(IUserDao userDao, IPasswordHasher passwordHasher, IJwtTokenService jwtTokenService)
   {
     _userDao = userDao;
     _passwordHasher = passwordHasher;
+    _jwtTokenService = jwtTokenService;
+  }
+
+  [HttpPost("login")]
+  public IActionResult Login([FromBody] LoginRequest request)
+  {
+    var user = _userDao.GetByUsername(request.Username);
+    if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+    {
+      return Unauthorized(ApiResponse<string>.Fail("Invalid username or password"));
+    }
+
+    var token = _jwtTokenService.GenerateToken(Guid.NewGuid(), user.Username);
+    return Ok(ApiResponse<string>.Ok(token, "Login successful"));
   }
 
   [HttpPost("register")]
