@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqlMap namespace="Votes"
+  xmlns="http://ibatis.apache.org/mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <statements>
+
+    <insert id="Insert" parameterClass="SurveyApp.API.Models.Vote">
+      <![CDATA[
+        INSERT INTO Votes (UserId, SurveyId, OptionId, CreatedAt)
+        VALUES (#UserId#, #SurveyId#, #OptionId#, #CreatedAt#)
+      ]]>
+    </insert>
+
+    <select id="GetByUserAndSurvey" parameterClass="SurveyApp.API.Models.Vote"
+      resultClass="SurveyApp.API.Models.Vote">
+      <![CDATA[
+        SELECT Id, UserId, SurveyId, OptionId, CreatedAt
+        FROM Votes
+        WHERE UserId = #UserId# AND SurveyId = #SurveyId#
+      ]]>
+    </select>
+
+    <select id="GetVotesBySurveyId" parameterClass="int" resultClass="SurveyApp.API.Models.Vote">
+      <![CDATA[
+        SELECT Id, UserId, SurveyId, OptionId, CreatedAt
+        FROM Votes
+        WHERE SurveyId = #value#
+      ]]>
+    </select>
+
+    <delete id="DeleteById" parameterClass="int">
+      <![CDATA[
+        DELETE FROM Votes WHERE Id = #value#
+      ]]>
+    </delete>
+
+  </statements>
+</sqlMap>

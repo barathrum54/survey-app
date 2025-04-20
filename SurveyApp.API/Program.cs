@@ -26,6 +26,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<IVoteService, VoteService>();
 
 // 🔐 JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -58,10 +59,9 @@ builder.Services.AddSqlMapper(options =>
 // 🧪 Scoped DAOs
 Console.WriteLine("🔍 Registering DAOs...");
 builder.Services.AddScoped<IUserDao, UserDao>();
-
-Console.WriteLine("🔍 Registering SurveyDao...");
 builder.Services.AddScoped<ISurveyDao, SurveyDao>();
 builder.Services.AddScoped<IOptionDao, OptionDao>();
+builder.Services.AddScoped<IVoteDao, VoteDao>();
 
 Console.WriteLine("🔍 Registering DAOs DONE.");
 
