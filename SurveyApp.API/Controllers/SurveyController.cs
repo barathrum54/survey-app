@@ -4,70 +4,104 @@ using Microsoft.AspNetCore.Mvc;
 using SurveyApp.API.DTOs;
 using SurveyApp.API.Services.Interfaces;
 
-namespace SurveyApp.API.Controllers;
-
-[ApiController]
-[Route("[controller]")]
-[Authorize]
-public class SurveyController : ControllerBase
+namespace SurveyApp.API.Controllers
 {
-  private readonly ISurveyService _surveyService;
-
-  public SurveyController(ISurveyService surveyService)
+  [ApiController]
+  [Route("[controller]")]
+  [Authorize]
+  public class SurveyController : ControllerBase
   {
-    _surveyService = surveyService;
-  }
-  [HttpPost]
-  public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
-  {
-    if (!ModelState.IsValid)
-      return BadRequest(ModelState);
+    private readonly ISurveyService _surveyService;
+    private readonly IVoteService _voteService;
 
-    try
+    public SurveyController(ISurveyService surveyService, IVoteService voteService)
+    {
+      _surveyService = surveyService;
+      _voteService = voteService;
+    }
+
+    // Create Survey
+    [HttpPost]
+    public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
+    {
+      if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+      try
+      {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var survey = _surveyService.CreateSurvey(request, userId);
+        return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, survey);
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
+        Console.WriteLine("🔥 STACK: " + ex.StackTrace);
+        return StatusCode(500, ex.Message); // TEMP: surface actual problem
+      }
+    }
+
+    // Get Survey by ID
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public IActionResult GetSurvey(int id)
+    {
+      var survey = _surveyService.GetSurveyById(id);
+      if (survey == null) return NotFound();
+      return Ok(survey);
+    }
+
+    // Get Surveys by UserId (Created by user)
+    [HttpGet("me")]
+    public IActionResult GetMySurveys()
     {
       var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-      var survey = _surveyService.CreateSurvey(request, userId);
-      return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, survey);
+      var surveys = _surveyService.GetSurveysByUserId(userId);
+      return Ok(surveys);
     }
-    catch (Exception ex)
-    {
-      Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
-      Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-      return StatusCode(500, ex.Message); // TEMP: surface actual problem
-    }
-  }
-  [HttpGet("{id}")]
-  [AllowAnonymous]
-  public IActionResult GetSurvey(int id)
-  {
-    var survey = _surveyService.GetSurveyById(id);
-    if (survey == null) return NotFound();
-    return Ok(survey);
-  }
-  [HttpGet("me")]
-  public IActionResult GetMySurveys()
-  {
-    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-    var surveys = _surveyService.GetSurveysByUserId(userId);
-    return Ok(surveys);
-  }
-  [HttpDelete("{id}")]
-  public IActionResult DeleteSurvey(int id)
-  {
-    try
-    {
-      var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-      _surveyService.DeleteSurvey(id, userId);
-      return NoContent();
-    }
-    catch (KeyNotFoundException)
-    {
-      return NotFound();
-    }
-    catch (UnauthorizedAccessException)
-    {
-      return Forbid();
-    }
-  }
 
+    // Delete Survey
+    [HttpDelete("{id}")]
+    public IActionResult DeleteSurvey(int id)
+    {
+      try
+      {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        _surveyService.DeleteSurvey(id, userId);
+        return NoContent();
+      }
+      catch (KeyNotFoundException)
+      {
+        return NotFound();
+      }
+      catch (UnauthorizedAccessException)
+      {
+        return Forbid();
+      }
+    }
+
+    // Get Survey Results (Aggregated Votes)
+    [HttpGet("{id}/results")]
+    [AllowAnonymous]
+    public IActionResult GetSurveyResults(int id)
+    {
+      var survey = _surveyService.GetSurveyById(id);
+      if (survey == null)
+      {
+        return NotFound(new { message = "Survey not found." });
+      }
+
+      var votes = _voteService.GetVotesBySurveyId(id);
+      var results = votes
+          .GroupBy(vote => vote.OptionId)
+          .Select(group => new
+          {
+            OptionId = group.Key,
+            VoteCount = group.Count()
+          })
+          .ToList();
+
+      return Ok(results);
+    }
+  }
 }
