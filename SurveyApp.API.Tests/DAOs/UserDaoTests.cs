@@ -34,7 +34,7 @@ public class UserDaoTests
     // Assert
     Assert.NotNull(user);
     Assert.Equal("admin", user.Username);
-    Assert.Equal("admin1234", user.PasswordHash);
+    Assert.Equal("rJaJ4ickJwheNbnT4+i+2IyzQ0gotDuG/AWWytTG4nA=", user.PasswordHash);
     Assert.True(user.Id > 0);
   }
 }
