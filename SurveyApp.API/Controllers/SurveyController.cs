@@ -1,0 +1,43 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SurveyApp.API.DTOs;
+using SurveyApp.API.Services.Interfaces;
+
+namespace SurveyApp.API.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+[Authorize]
+public class SurveyController : ControllerBase
+{
+  private readonly ISurveyService _surveyService;
+
+  public SurveyController(ISurveyService surveyService)
+  {
+    _surveyService = surveyService;
+  }
+  [HttpPost]
+  public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    try
+    {
+      var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var survey = _surveyService.CreateSurvey(request, userId);
+      return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, survey);
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
+      Console.WriteLine("🔥 STACK: " + ex.StackTrace);
+      return StatusCode(500, ex.Message); // TEMP: surface actual problem
+    }
+  }
+
+  // Placeholder for GetSurvey endpoint
+  [HttpGet("{id}")]
+  public IActionResult GetSurvey(int id) => Ok();
+}

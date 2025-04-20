@@ -5,7 +5,7 @@ namespace SurveyApp.API.Tests.Fixtures;
 
 public class DatabaseFixture : IDisposable
 {
-  private readonly WebApplicationFactory<Program> _factory;
+  public WebApplicationFactory<Program> _factory;
   private readonly IServiceScope _scope;
 
   public IServiceProvider Services => _scope.ServiceProvider;
@@ -13,7 +13,7 @@ public class DatabaseFixture : IDisposable
   public DatabaseFixture()
   {
     _factory = new WebApplicationFactory<Program>();
-    _scope = _factory.Services.CreateScope(); // ✅ scoped properly now
+    _scope = _factory.Services.CreateScope();
   }
 
   public T GetService<T>() where T : notnull => Services.GetRequiredService<T>();
