@@ -15,13 +15,15 @@ public class TestController : ControllerBase
   private readonly IUserDao _userDao;
   private readonly IJwtTokenService _jwtTokenService;
   private readonly ISurveyDao _surveyDao;
+  private readonly IOptionDao _optionDao;
 
-  public TestController(IUserDao userDao, IJwtTokenService jwtTokenService, ISurveyDao surveyDao)
+  public TestController(IUserDao userDao, IJwtTokenService jwtTokenService, ISurveyDao surveyDao, IOptionDao optionDao)
   {
+    _optionDao = optionDao;
     _userDao = userDao;
     _jwtTokenService = jwtTokenService;
     _surveyDao = surveyDao;
-    Console.WriteLine("🧪 SurveyDao injected: " + (surveyDao != null));
+    Console.WriteLine("🧪 OptionDao injected: " + (optionDao != null));
   }
 
   [Authorize]
@@ -54,6 +56,21 @@ public class TestController : ControllerBase
 
     _surveyDao.Insert(survey);
     var result = _surveyDao.GetById(survey.Id);
+
+    return Ok(result);
+  }
+  [HttpPost("option")]
+  public IActionResult TestInsertOption()
+  {
+    var option = new Option
+    {
+      Text = "Manual Survey",
+      SurveyId = 1,
+      CreatedAt = DateTime.UtcNow
+    };
+
+    _optionDao.Insert(option);
+    var result = _optionDao.GetById(option.Id);
 
     return Ok(result);
   }
