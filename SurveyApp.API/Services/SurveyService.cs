@@ -43,5 +43,26 @@ public class SurveyService : ISurveyService
 
     return createdSurvey;
   }
+  public SurveyWithOptionsResponse? GetSurveyById(int id)
+  {
+    var survey = _surveyDao.GetById(id);
+    if (survey == null) return null;
+
+    var options = _optionDao.GetBySurveyId(id);
+    return new SurveyWithOptionsResponse
+    {
+      Id = survey.Id,
+      Title = survey.Title,
+      CreatedBy = survey.CreatedBy,
+      CreatedAt = survey.CreatedAt,
+      Options = options.Select(o => new OptionResponse
+      {
+        Id = o.Id,
+        Text = o.Text,
+        SurveyId = o.SurveyId
+      }).ToList()
+    };
+  }
+
 
 }

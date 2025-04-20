@@ -36,8 +36,13 @@ public class SurveyController : ControllerBase
       return StatusCode(500, ex.Message); // TEMP: surface actual problem
     }
   }
-
-  // Placeholder for GetSurvey endpoint
   [HttpGet("{id}")]
-  public IActionResult GetSurvey(int id) => Ok();
+  [AllowAnonymous]
+  public IActionResult GetSurvey(int id)
+  {
+    var survey = _surveyService.GetSurveyById(id);
+    if (survey == null) return NotFound();
+    return Ok(survey);
+  }
+
 }

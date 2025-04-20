@@ -7,4 +7,5 @@ public interface IOptionDao
   Option Insert(Option option);
   Option? GetById(int id);
   IEnumerable<Option> GetAll();
+  IEnumerable<Option> GetBySurveyId(int surveyId);
 }
