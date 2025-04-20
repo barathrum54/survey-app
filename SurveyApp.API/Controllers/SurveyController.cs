@@ -44,5 +44,12 @@ public class SurveyController : ControllerBase
     if (survey == null) return NotFound();
     return Ok(survey);
   }
+  [HttpGet("me")]
+  public IActionResult GetMySurveys()
+  {
+    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+    var surveys = _surveyService.GetSurveysByUserId(userId);
+    return Ok(surveys);
+  }
 
 }

@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <sqlMap namespace="Surveys"
-        xmlns="http://ibatis.apache.org/mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  xmlns="http://ibatis.apache.org/mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <statements>
 
     <insert id="Insert" parameterClass="SurveyApp.API.Models.Survey">
@@ -33,6 +33,13 @@
     <select id="GetAll" resultClass="SurveyApp.API.Models.Survey">
       <![CDATA[
         SELECT Id, Title, CreatedBy, CreatedAt FROM Surveys
+      ]]>
+    </select>
+    <select id="GetByUserId" parameterClass="int" resultClass="SurveyApp.API.Models.Survey">
+      <![CDATA[
+        SELECT Id, Title, CreatedBy, CreatedAt
+        FROM Surveys
+        WHERE CreatedBy = #value#
       ]]>
     </select>
 

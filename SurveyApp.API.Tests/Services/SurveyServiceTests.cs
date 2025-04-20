@@ -10,11 +10,14 @@ namespace SurveyApp.API.Tests.Services;
 public class SurveyServiceTests : IClassFixture<DatabaseFixture>
 {
   private readonly ISurveyService _surveyService;
+  private readonly ISurveyDao _surveyDao;
+
   private readonly IOptionDao _optionDao;
 
   public SurveyServiceTests(DatabaseFixture fixture)
   {
     _surveyService = fixture.GetService<ISurveyService>();
+    _surveyDao = fixture.GetService<ISurveyDao>();
     _optionDao = fixture.GetService<IOptionDao>();
   }
 
@@ -81,5 +84,26 @@ public class SurveyServiceTests : IClassFixture<DatabaseFixture>
   {
     var result = _surveyService.GetSurveyById(-999);
     Assert.Null(result);
+  }
+  [Fact]
+  public void GetSurveysByUser_WithExistingUser_ShouldReturnList()
+  {
+    var userId = 1;
+
+    var result = _surveyService.GetSurveysByUserId(userId).ToList();
+
+    Assert.NotNull(result);
+    Assert.All(result, s => Assert.Equal(userId, s.CreatedBy));
+    Assert.All(result, s => Assert.NotNull(s.Options));
+  }
+
+  [Fact]
+  public void GetSurveysByUser_WithNoSurveys_ShouldReturnEmptyList()
+  {
+    var userId = -9999; // unlikely to exist
+
+    var result = _surveyService.GetSurveysByUserId(userId);
+
+    Assert.Empty(result);
   }
 }
