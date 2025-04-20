@@ -7,16 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="IBatisNet.Core" Version="1.6.2.3" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="IBatisNet.DataMapper">
-      <HintPath>lib/IBatisNet.DataMapper.dll</HintPath>
-    </Reference>
-    <Reference Include="IBatisNet.Common">
-      <HintPath>lib/IBatisNet.Common.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.4" />
+    <PackageReference Include="System.Security.Permissions" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup>

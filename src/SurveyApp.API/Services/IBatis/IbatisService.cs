@@ -1,5 +1,3 @@
-using IBatisNet.DataMapper;
-using IBatisNet.DataMapper.Configuration;
 
 namespace SurveyApp.API.Services.IBatis;
 
