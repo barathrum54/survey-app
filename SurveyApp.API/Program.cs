@@ -60,6 +60,8 @@ builder.Services.AddScoped<IUserDao, UserDao>();
 
 Console.WriteLine("🔍 Registering SurveyDao...");
 builder.Services.AddScoped<ISurveyDao, SurveyDao>();
+builder.Services.AddScoped<IOptionDao, OptionDao>();
+
 Console.WriteLine("🔍 Registering DAOs DONE.");
 
 var app = builder.Build();
