@@ -55,7 +55,12 @@ builder.Services.AddSqlMapper(options =>
     builder.Configuration.GetSection("DB").Bind(options));
 
 // 🧪 Scoped DAOs
+Console.WriteLine("🔍 Registering DAOs...");
 builder.Services.AddScoped<IUserDao, UserDao>();
+
+Console.WriteLine("🔍 Registering SurveyDao...");
+builder.Services.AddScoped<ISurveyDao, SurveyDao>();
+Console.WriteLine("🔍 Registering DAOs DONE.");
 
 var app = builder.Build();
 
