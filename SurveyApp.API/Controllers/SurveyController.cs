@@ -20,7 +20,6 @@ namespace SurveyApp.API.Controllers
       _voteService = voteService;
     }
 
-    // Create Survey
     [HttpPost]
     public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
     {

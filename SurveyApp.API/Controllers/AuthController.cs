@@ -3,6 +3,7 @@ using SurveyApp.API.DAOs.Interfaces;
 using SurveyApp.API.Models;
 using SurveyApp.API.Services.Interfaces;
 using SurveyApp.API.DTOs;
+using FluentValidation;
 
 namespace SurveyApp.API.Controllers;
 
@@ -13,17 +14,33 @@ public class AuthController : ControllerBase
   private readonly IUserDao _userDao;
   private readonly IPasswordHasher _passwordHasher;
   private readonly IJwtTokenService _jwtTokenService;
+  private readonly IValidator<LoginRequest> _loginRequestValidator;
+  private readonly IValidator<RegisterRequest> _registerRequestValidator;
 
-  public AuthController(IUserDao userDao, IPasswordHasher passwordHasher, IJwtTokenService jwtTokenService)
+  public AuthController(
+      IUserDao userDao,
+      IPasswordHasher passwordHasher,
+      IJwtTokenService jwtTokenService,
+      IValidator<LoginRequest> loginRequestValidator,
+      IValidator<RegisterRequest> registerRequestValidator)
   {
     _userDao = userDao;
     _passwordHasher = passwordHasher;
     _jwtTokenService = jwtTokenService;
+    _loginRequestValidator = loginRequestValidator;
+    _registerRequestValidator = registerRequestValidator;
+
   }
 
   [HttpPost("login")]
-  public IActionResult Login([FromBody] LoginRequest request)
+  public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
+    var validationResult = await _loginRequestValidator.ValidateAsync(request);
+    if (!validationResult.IsValid)
+    {
+      return BadRequest(validationResult.Errors);
+    }
+
     var user = _userDao.GetByUsername(request.Username);
     if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
     {
@@ -34,9 +51,14 @@ public class AuthController : ControllerBase
     return Ok(ApiResponse<string>.Ok(token, "Login successful"));
   }
 
+
   [HttpPost("register")]
-  public IActionResult Register([FromBody] RegisterRequest request)
+  public async Task<IActionResult> Register([FromBody] RegisterRequest request)
   {
+    var validationResult = await _registerRequestValidator.ValidateAsync(request);
+    if (!validationResult.IsValid)
+      return BadRequest(validationResult.Errors);
+
     try
     {
       var existing = _userDao.GetByUsername(request.Username);

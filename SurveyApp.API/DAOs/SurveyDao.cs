@@ -14,7 +14,6 @@ public class SurveyDao : ISurveyDao
   }
   public Survey Insert(Survey survey)
   {
-    Console.WriteLine("📥 DAO Insert START for " + survey.Title);
     try
     {
       _mapper.Insert("Surveys.Insert", survey);
@@ -22,14 +21,11 @@ public class SurveyDao : ISurveyDao
       if (inserted == null) throw new Exception("Failed to retrieve inserted record");
       survey.Id = inserted.Id;
 
-      Console.WriteLine("✅ DAO Insert DONE with ID: " + survey.Id);
       return survey;
     }
     catch (Exception ex)
     {
-      Console.WriteLine("🔥 DAO ERROR: " + ex.Message);
-      Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-      throw;
+      throw new Exception("Failed to insert survey: " + ex.Message, ex);
     }
   }
 
@@ -48,7 +44,6 @@ public class SurveyDao : ISurveyDao
   }
   public void DeleteById(int id)
   {
-    Console.WriteLine($"📤 Deleting Survey with ID: {id}");
     _mapper.Delete("Surveys.DeleteById", id);
   }
 }

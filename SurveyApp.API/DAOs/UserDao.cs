@@ -23,15 +23,12 @@ public class UserDao : IUserDao
     try
     {
       _mapper.Insert("Users.Insert", user);
-      Console.WriteLine("✅ DAO Insert DONE");
       return user;
 
     }
     catch (Exception ex)
     {
-      Console.WriteLine("🔥 DAO ERROR: " + ex.Message);
-      Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-      throw;
+      throw new Exception("Failed to insert user: " + ex.Message, ex);
     }
   }
 }

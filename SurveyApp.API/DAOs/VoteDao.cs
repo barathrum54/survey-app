@@ -18,12 +18,11 @@ namespace SurveyApp.API.DAOs
       try
       {
         _mapper.Insert("Votes.Insert", vote);
-        return vote;  // return the inserted vote object
+        return vote;
       }
       catch (Exception ex)
       {
-        Console.WriteLine("Error in inserting vote: " + ex.Message);
-        throw;
+        throw new Exception("Failed to insert vote: " + ex.Message, ex);
       }
     }
 
