@@ -51,8 +51,9 @@ SurveyApp/
 ## Testing
 
 Tested with xUnit using a seeded MSSQL instance. Includes unit and integration tests covering registration, login, auth edge cases, survey creation, voting rules, vote submission, and result accuracy (including percentages). Run tests with:
-
+```
 dotnet test --logger:"console;verbosity=detailed"
+```
 
 ## Diagrams
 
