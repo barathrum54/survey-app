@@ -4,7 +4,7 @@ SurveyApp is a secure, high-performance API for managing user-created surveys wi
 
 ## Overview
 
-This repository was developed as part of a take-home project for a senior backend developer position. The goal was to design a modular, extensible backend using:
+The goal was to design a modular, extensible backend using:
 
 - ASP.NET 8 Web API
 - iBATIS (SQLBatis.NET)
