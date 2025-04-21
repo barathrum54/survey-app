@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SurveyApp.API.DTOs;
 using SurveyApp.API.Services.Interfaces;
+using FluentValidation;
 
 namespace SurveyApp.API.Controllers
 {
@@ -12,15 +13,21 @@ namespace SurveyApp.API.Controllers
   public class VoteController : ControllerBase
   {
     private readonly IVoteService _voteService;
+    private readonly IValidator<VoteRequest> _voteRequestValidator;
 
-    public VoteController(IVoteService voteService)
+    public VoteController(IVoteService voteService, IValidator<VoteRequest> voteRequestValidator)
     {
       _voteService = voteService;
+      _voteRequestValidator = voteRequestValidator;
     }
 
     [HttpPost]
-    public IActionResult CreateVote([FromBody] VoteRequest voteRequest)
+    public async Task<IActionResult> CreateVote([FromBody] VoteRequest voteRequest)
     {
+      var validationResult = await _voteRequestValidator.ValidateAsync(voteRequest);
+      if (!validationResult.IsValid)
+        return BadRequest(validationResult.Errors);
+
       var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
       try
       {
@@ -29,8 +36,7 @@ namespace SurveyApp.API.Controllers
       }
       catch (InvalidOperationException ex)
       {
-        // Handle the case when a user has already voted on the survey
-        return Conflict(new { message = ex.Message });  // Return 409 Conflict
+        return Conflict(new { message = ex.Message });
       }
       catch (Exception ex)
       {
@@ -47,4 +53,3 @@ namespace SurveyApp.API.Controllers
     }
   }
 }
-

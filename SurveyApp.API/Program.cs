@@ -9,6 +9,8 @@ using SqlBatis.DataMapper.DependencyInjection;
 using SurveyApp.API.Services;
 using SurveyApp.API.Services.Interfaces;
 using SurveyApp.API.Middleware;
+using SurveyApp.API.DTOs;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +68,15 @@ builder.Services.AddScoped<IVoteDao, VoteDao>();
 
 Console.WriteLine("🔍 Registering DAOs DONE.");
 
+// 🌍 Validators
+builder.Services.AddTransient<IValidator<CreateSurveyRequest>, CreateSurveyRequestValidator>();
+builder.Services.AddTransient<IValidator<LoginRequest>, LoginRequestValidator>();
+builder.Services.AddTransient<IValidator<RegisterRequest>, RegisterRequestValidator>();
+builder.Services.AddTransient<IValidator<VoteRequest>, VoteRequestValidator>();
+
 var app = builder.Build();
+
+
 
 // ----------------------
 // 🚀 Middleware Pipeline

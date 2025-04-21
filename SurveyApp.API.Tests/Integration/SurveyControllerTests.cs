@@ -173,6 +173,27 @@ namespace SurveyApp.API.Tests.Integration
       Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option A should have 1 vote (50%)
       Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option B should have 1 vote (50%)
     }
+    [Fact]
+    public async Task CreateSurvey_ShouldReturnBadRequest_WhenOptionsAreInvalid()
+    {
+      var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+      var request = new CreateSurveyRequest
+      {
+        Title = "Test Survey",
+        Options = new List<string> { "Option A" }  // Only 1 option, should fail
+      };
+
+      var response = await _client.PostAsJsonAsync("/Survey", request);
+
+      // Assert: Expecting BadRequest due to validation failure
+      Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+
+      var content = await response.Content.ReadAsStringAsync();
+      Assert.Contains("At least 2 options are required.", content);  // Check for the validation error message
+    }
+
 
   }
 }

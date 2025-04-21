@@ -152,4 +152,22 @@ public class VoteControllerTests : IClassFixture<DatabaseFixture>
     Assert.NotEmpty(votes);
     Assert.All(votes, v => Assert.Equal(createdSurvey.Id, v.SurveyId));
   }
+  [Fact]
+  public async Task Vote_ShouldReturnBadRequest_WhenSurveyIdIsInvalid()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234"); // Get a valid token
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var request = new VoteRequest
+    {
+      SurveyId = 0,  // Invalid SurveyId
+      OptionId = 1
+    };
+
+    var response = await _client.PostAsJsonAsync("/vote", request);
+
+    // Assert: Expecting BadRequest due to validation failure
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+  }
+
 }

@@ -49,4 +49,35 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     Assert.True(!string.IsNullOrWhiteSpace(content?.Data));
   }
+  [Fact]
+  public async Task Login_ShouldReturnBadRequest_WhenUsernameIsEmpty()
+  {
+    var request = new LoginRequest
+    {
+      Username = "",  // Invalid empty username
+      Password = "admin1234"
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/login", request);
+
+    // Assert: Expecting BadRequest due to validation failure
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+  }
+  [Fact]
+  public async Task Register_ShouldReturnBadRequest_WhenEmailIsInvalid()
+  {
+    var request = new RegisterRequest
+    {
+      Username = "testuser",
+      Password = "Password123!",
+      Email = "invalid-email"  // Invalid email format
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/register", request);
+
+    // Assert: Expecting BadRequest due to invalid email format
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+  }
+
+
 }

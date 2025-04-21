@@ -14,7 +14,6 @@ public class OptionDao : IOptionDao
   }
   public Option Insert(Option option)
   {
-    Console.WriteLine("📥 DAO Insert START for " + option.Text);
     try
     {
       _mapper.Insert("Options.Insert", option);
@@ -25,14 +24,11 @@ public class OptionDao : IOptionDao
 
       option.Id = inserted.Id;
 
-      Console.WriteLine("✅ DAO Insert DONE with ID: " + option.Id);
       return option;
     }
     catch (Exception ex)
     {
-      Console.WriteLine("🔥 DAO ERROR: " + ex.Message);
-      Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-      throw;
+      throw new Exception("Failed to insert option: " + ex.Message, ex);
     }
   }
 
