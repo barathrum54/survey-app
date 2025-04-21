@@ -36,7 +36,7 @@ namespace SurveyApp.API.Controllers
       {
         Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
         Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-        return StatusCode(500, ex.Message); // TEMP: surface actual problem
+        return StatusCode(500, ex.Message);
       }
     }
 
