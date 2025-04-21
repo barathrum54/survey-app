@@ -1,4 +1,3 @@
-```markdown
 # SurveyApp
 
 SurveyApp is a secure, high-performance API for managing user-created surveys with options and votes. Designed with a clean layered architecture, robust validation, and token-based authentication. Ideal for demonstrating enterprise-level backend design with modern .NET practices.
@@ -14,7 +13,7 @@ This repository was developed as part of a take-home project for a senior backen
 - FluentValidation
 - Swagger + xUnit
 - Global Exception Handling
-- Health check endpoint (`/healthz`)
+- Health check endpoint (\`/healthz\`)
 
 Users can:
 
@@ -25,7 +24,6 @@ Users can:
 - List/delete their own surveys (owner-only deletion)
 
 ## Project Structure
-```
 
 SurveyApp2/
 ├── SurveyApp.API/
@@ -49,20 +47,13 @@ SurveyApp2/
 ├── SurveyApp.sln
 └── .gitignore
 
-```
-
 ## Testing
 
 Tested with xUnit using a seeded MSSQL instance. Includes unit and integration tests covering registration, login, auth edge cases, survey creation, voting rules, vote submission, and result accuracy (including percentages). Run tests with:
 
-```
-
 dotnet test --logger:"console;verbosity=detailed"
-
-```
 
 ## Diagrams
 
 Available in public Figma:
 [https://www.figma.com/design/bipcukLDKjcuigB1njVPnE/SurveyApi](https://www.figma.com/design/bipcukLDKjcuigB1njVPnE/SurveyApi)
-```
