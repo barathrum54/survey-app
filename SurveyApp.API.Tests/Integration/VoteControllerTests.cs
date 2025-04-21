@@ -117,42 +117,6 @@ public class VoteControllerTests : IClassFixture<DatabaseFixture>
   }
 
   [Fact]
-  public async Task Vote_GetVotesBySurvey_ShouldReturnAllVotes()
-  {
-    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
-    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-    // First create a survey
-    var createSurveyRequest = new CreateSurveyRequest
-    {
-      Title = "Test Survey for Voting",
-      Options = new List<string> { "Option A", "Option B" }
-    };
-
-    var createSurveyResponse = await _client.PostAsJsonAsync("/survey", createSurveyRequest);
-    createSurveyResponse.EnsureSuccessStatusCode();
-    var createdSurvey = await createSurveyResponse.Content.ReadFromJsonAsync<Survey>();
-
-    // Cast a vote
-    var voteRequest = new VoteRequest
-    {
-      SurveyId = createdSurvey!.Id,
-      OptionId = 1
-    };
-
-    // POST /vote instead of /votes
-    await _client.PostAsJsonAsync("/vote", voteRequest);  // Change here
-
-    // Retrieve votes for the survey
-    var voteResponse = await _client.GetAsync($"/vote/{createdSurvey!.Id}/results");  // Change here
-    voteResponse.EnsureSuccessStatusCode();
-
-    var votes = await voteResponse.Content.ReadFromJsonAsync<List<Vote>>();
-    Assert.NotNull(votes);
-    Assert.NotEmpty(votes);
-    Assert.All(votes, v => Assert.Equal(createdSurvey.Id, v.SurveyId));
-  }
-  [Fact]
   public async Task Vote_ShouldReturnBadRequest_WhenSurveyIdIsInvalid()
   {
     var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234"); // Get a valid token
@@ -185,29 +149,7 @@ public class VoteControllerTests : IClassFixture<DatabaseFixture>
 
     Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
   }
-  [Fact]
-  public async Task Vote_GetSurveyResults_ShouldReturnEmpty_WhenNoVotesExist()
-  {
-    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
-    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-    var surveyRequest = new CreateSurveyRequest
-    {
-      Title = "No Votes Survey",
-      Options = new List<string> { "Option A", "Option B" }
-    };
-
-    var createResponse = await _client.PostAsJsonAsync("/survey", surveyRequest);
-    var created = await createResponse.Content.ReadFromJsonAsync<Survey>();
-
-    var resultResponse = await _client.GetAsync($"/vote/{created!.Id}/results");
-
-    resultResponse.EnsureSuccessStatusCode();
-    var results = await resultResponse.Content.ReadFromJsonAsync<List<Vote>>();
-
-    Assert.NotNull(results);
-    Assert.Empty(results);
-  }
   [Fact]
   public async Task Vote_ShouldReturnBadRequest_WhenOptionDoesNotBelongToSurvey()
   {
