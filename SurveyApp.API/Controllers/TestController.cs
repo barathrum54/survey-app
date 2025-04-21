@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SurveyApp.API.DTOs;
@@ -10,6 +9,7 @@ namespace SurveyApp.API.Controllers;
 
 [ApiController]
 [Route("test")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class TestController : ControllerBase
 {
   private readonly IUserDao _userDao;
@@ -41,9 +41,10 @@ public class TestController : ControllerBase
   [HttpPost("token")]
   public IActionResult GetToken()
   {
-    var token = _jwtTokenService.GenerateToken(1, "testuser"); // Replace Guid.NewGuid() with an integer value
+    var token = _jwtTokenService.GenerateToken(1, "testuser");
     return Ok(ApiResponse<string>.Ok(token));
   }
+
   [HttpPost("survey")]
   public IActionResult TestInsertSurvey()
   {
@@ -59,6 +60,7 @@ public class TestController : ControllerBase
 
     return Ok(result);
   }
+
   [HttpPost("option")]
   public IActionResult TestInsertOption()
   {
@@ -74,11 +76,10 @@ public class TestController : ControllerBase
 
     return Ok(result);
   }
+
   [HttpGet("trigger-error")]
   public IActionResult TriggerError()
   {
-    // This will simulate an unhandled exception
     throw new Exception("This is a test exception for global error handling.");
   }
-
 }

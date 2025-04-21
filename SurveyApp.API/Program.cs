@@ -28,7 +28,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new() { Title = "SurveyApp API", Version = "v1" });
+
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, "SurveyApp.API.xml");
+    options.IncludeXmlComments(xmlPath);
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -40,6 +42,12 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Enter your JWT token here. Example: Bearer {your_token}"
     });
 
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "SurveyApp API",
+        Version = "v1",
+        Description = "Manage users, surveys and votes"
+    });
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
