@@ -83,4 +83,5 @@ public class AuthController : ControllerBase
       return StatusCode(500, ApiResponse<string>.Fail("Internal server error"));
     }
   }
+
 }

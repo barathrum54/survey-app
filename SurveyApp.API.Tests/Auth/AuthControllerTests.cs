@@ -78,6 +78,89 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
     // Assert: Expecting BadRequest due to invalid email format
     Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
   }
+  [Fact]
+  public async Task Register_ShouldReturnConflict_WhenUsernameExists()
+  {
+    var request = new RegisterRequest
+    {
+      Username = "admin2", // already exists
+      Password = "SomePass123!",
+      Email = "admin2@example.com"
+    };
 
+    var response = await _client.PostAsJsonAsync("/auth/register", request);
+
+    Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+  }
+  [Fact]
+  public async Task Login_ShouldReturnUnauthorized_WhenPasswordIncorrect()
+  {
+    var request = new LoginRequest
+    {
+      Username = "admin2",
+      Password = "wrong-password"
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/login", request);
+
+    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+  }
+  [Fact]
+  public async Task Register_ShouldReturnBadRequest_WhenMissingFields()
+  {
+    var request = new RegisterRequest
+    {
+      Username = "",
+      Password = "",
+      Email = ""
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/register", request);
+
+    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+  }
+  [Fact]
+  public async Task Login_ShouldReturnBadRequest_WhenFieldsAreEmpty()
+  {
+    var request = new LoginRequest
+    {
+      Username = "",
+      Password = ""
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/login", request);
+
+    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+  }
+  [Fact]
+  public async Task Register_ThenLogin_ShouldSucceed()
+  {
+    var username = $"user_{Guid.NewGuid():N}";
+    var password = "strongPass123!";
+    var email = $"{username}@example.com";
+
+    var registerPayload = new RegisterRequest
+    {
+      Username = username,
+      Password = password,
+      Email = email
+    };
+
+    var registerResponse = await _client.PostAsJsonAsync("/auth/register", registerPayload);
+    Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
+
+    var loginPayload = new LoginRequest
+    {
+      Username = username,
+      Password = password
+    };
+
+    var loginResponse = await _client.PostAsJsonAsync("/auth/login", loginPayload);
+    var loginContent = await loginResponse.Content.ReadFromJsonAsync<ApiResponse<string>>();
+
+    Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+    Assert.False(string.IsNullOrWhiteSpace(loginContent?.Data));
+    _output.WriteLine("TOKEN: " + loginContent?.Data);
+  }
 
 }

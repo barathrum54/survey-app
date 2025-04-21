@@ -69,7 +69,6 @@ namespace SurveyApp.API.Tests.Integration
 
       var response = await _client.GetAsync("/Survey/me");
       var content = await response.Content.ReadAsStringAsync();
-      _output.WriteLine("🔴 Raw Response:\n" + content);
 
       response.EnsureSuccessStatusCode();
 
