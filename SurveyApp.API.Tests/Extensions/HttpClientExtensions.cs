@@ -7,27 +7,29 @@ namespace SurveyApp.API.Tests.Extensions;
 
 public static class HttpClientExtensions
 {
-  public static async Task<string> LoginAndGetTokenAsync(this HttpClient client, string username, string password)
+  public static async Task<string> LoginAndGetTokenAsync(this HttpClient client, string username, string password, bool autoRegister = false)
   {
-    var loginRequest = new LoginRequest
+    if (autoRegister)
+    {
+      var registerPayload = new RegisterRequest
+      {
+        Username = username,
+        Password = password,
+        Email = $"{username}@test.com"
+      };
+      await client.PostAsJsonAsync("/auth/register", registerPayload);
+    }
+
+    var loginPayload = new LoginRequest
     {
       Username = username,
       Password = password
     };
 
-    var response = await client.PostAsJsonAsync("/auth/login", loginRequest);
-    response.EnsureSuccessStatusCode();
+    var loginResponse = await client.PostAsJsonAsync("/auth/login", loginPayload);
+    loginResponse.EnsureSuccessStatusCode();
 
-    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<string>>(new JsonSerializerOptions
-    {
-      PropertyNameCaseInsensitive = true
-    });
-
-    if (apiResponse == null || string.IsNullOrWhiteSpace(apiResponse.Data))
-      throw new Exception("Login failed: token not returned");
-
-    Console.WriteLine($"Token for {username}: {apiResponse.Data}");
-
-    return apiResponse.Data;
+    var result = await loginResponse.Content.ReadFromJsonAsync<ApiResponse<string>>();
+    return result!.Data!;
   }
 }
