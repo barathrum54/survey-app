@@ -26,7 +26,7 @@ Users can:
 ## Project Structure
 
 ```
-SurveyApp2/
+SurveyApp/
 ├── SurveyApp.API/
 │   ├── Configuration/
 │   ├── Controllers/
