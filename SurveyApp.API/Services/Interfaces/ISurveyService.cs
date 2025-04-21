@@ -1,15 +1,11 @@
 using SurveyApp.API.DTOs;
-using SurveyApp.API.Models;
 
 namespace SurveyApp.API.Services.Interfaces;
 
 public interface ISurveyService
 {
-  Survey CreateSurvey(CreateSurveyRequest request, int userId);
+  SurveyWithOptionsResponse CreateSurvey(CreateSurveyRequest request, int userId);
   SurveyWithOptionsResponse? GetSurveyById(int id);
   IEnumerable<SurveyWithOptionsResponse> GetSurveysByUserId(int userId);
   void DeleteSurvey(int id, int userId);
-
-
-
 }

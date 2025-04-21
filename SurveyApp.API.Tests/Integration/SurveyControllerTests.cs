@@ -192,7 +192,53 @@ namespace SurveyApp.API.Tests.Integration
       var content = await response.Content.ReadAsStringAsync();
       Assert.Contains("At least 2 options are required.", content);  // Check for the validation error message
     }
+    [Fact]
+    public async Task GetSurvey_ShouldReturnNotFound_WhenSurveyDoesNotExist()
+    {
+      var response = await _client.GetAsync("/survey/999999");
 
+      Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+    }
+    [Fact]
+    public async Task GetMySurveys_ShouldReturnEmptyList_WhenNoSurveysExist()
+    {
+      var newUser = new RegisterRequest
+      {
+        Username = $"new_{Guid.NewGuid():N}",
+        Password = "TempPass123!",
+        Email = $"{Guid.NewGuid():N}@mail.com"
+      };
+      await _client.PostAsJsonAsync("/auth/register", newUser);
 
+      var token = await _client.LoginAndGetTokenAsync(newUser.Username, newUser.Password);
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+      var response = await _client.GetAsync("/survey/me");
+      response.EnsureSuccessStatusCode();
+
+      var result = await response.Content.ReadFromJsonAsync<List<Survey>>();
+      Assert.NotNull(result);
+      Assert.Empty(result!);
+    }
+    [Fact]
+    public async Task CreateSurvey_ShouldAcceptEdgeLimits()
+    {
+      var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+      var request = new CreateSurveyRequest
+      {
+        Title = new string('A', 100),  // Max title length
+        Options = new List<string> { "1", "2", "3", "4", "5" }  // Max options
+      };
+
+      var response = await _client.PostAsJsonAsync("/survey", request);
+      response.EnsureSuccessStatusCode();
+
+      var created = await response.Content.ReadFromJsonAsync<SurveyWithOptionsResponse>();
+      Assert.Equal(100, created!.Title.Length);
+      Assert.Equal(5, created.Options.Count);
+    }
   }
+
 }

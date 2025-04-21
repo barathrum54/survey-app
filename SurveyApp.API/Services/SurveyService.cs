@@ -16,7 +16,7 @@ public class SurveyService : ISurveyService
     _optionDao = optionDao;
   }
 
-  public Survey CreateSurvey(CreateSurveyRequest request, int userId)
+  public SurveyWithOptionsResponse CreateSurvey(CreateSurveyRequest request, int userId)
   {
     if (request.Options == null || request.Options.Count < 2 || request.Options.Count > 5)
       throw new ArgumentException("Survey must contain between 2 and 5 options.");
@@ -30,6 +30,7 @@ public class SurveyService : ISurveyService
 
     var createdSurvey = _surveyDao.Insert(survey);
 
+    var optionResponses = new List<OptionResponse>();
     foreach (var optionText in request.Options)
     {
       var option = new Option
@@ -38,10 +39,23 @@ public class SurveyService : ISurveyService
         Text = optionText.Trim(),
         CreatedAt = DateTime.UtcNow
       };
-      _optionDao.Insert(option);
+      var inserted = _optionDao.Insert(option);
+      optionResponses.Add(new OptionResponse
+      {
+        Id = inserted.Id,
+        Text = inserted.Text,
+        SurveyId = inserted.SurveyId
+      });
     }
 
-    return createdSurvey;
+    return new SurveyWithOptionsResponse
+    {
+      Id = createdSurvey.Id,
+      Title = createdSurvey.Title,
+      CreatedBy = createdSurvey.CreatedBy,
+      CreatedAt = createdSurvey.CreatedAt,
+      Options = optionResponses
+    };
   }
   public SurveyWithOptionsResponse? GetSurveyById(int id)
   {
