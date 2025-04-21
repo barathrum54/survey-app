@@ -4,12 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using SurveyApp.API.DTOs;
 using SurveyApp.API.Services.Interfaces;
 using FluentValidation;
+using SurveyApp.API.Models;
 
 namespace SurveyApp.API.Controllers
 {
+  /// <summary>
+  /// Handles voting operations for surveys.
+  /// </summary>
   [ApiController]
   [Route("[controller]")]
   [Authorize]
+  [Produces("application/json")]
   public class VoteController : ControllerBase
   {
     private readonly IVoteService _voteService;
@@ -21,7 +26,19 @@ namespace SurveyApp.API.Controllers
       _voteRequestValidator = voteRequestValidator;
     }
 
+    /// <summary>
+    /// Cast a vote on a survey option.
+    /// </summary>
+    /// <remarks>
+    /// Requires a valid JWT token and a valid VoteRequest.
+    /// </remarks>
+    /// <param name="voteRequest">The vote request containing SurveyId and OptionId.</param>
+    /// <returns>The created vote object.</returns>
     [HttpPost]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(Vote), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateVote([FromBody] VoteRequest voteRequest)
     {
       var validationResult = await _voteRequestValidator.ValidateAsync(voteRequest);
@@ -44,8 +61,17 @@ namespace SurveyApp.API.Controllers
       }
     }
 
+    /// <summary>
+    /// Get raw votes for a survey by ID.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint is public and returns all vote objects (not aggregated).
+    /// </remarks>
+    /// <param name="surveyId">Survey ID.</param>
+    /// <returns>List of votes.</returns>
     [HttpGet("{surveyId}/results")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(List<Vote>), StatusCodes.Status200OK)]
     public IActionResult GetSurveyResults(int surveyId)
     {
       var votes = _voteService.GetVotesBySurveyId(surveyId);

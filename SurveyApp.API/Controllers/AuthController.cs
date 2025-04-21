@@ -9,6 +9,7 @@ namespace SurveyApp.API.Controllers;
 
 [ApiController]
 [Route("auth")]
+[Produces("application/json")]
 public class AuthController : ControllerBase
 {
   private readonly IUserDao _userDao;
@@ -29,10 +30,22 @@ public class AuthController : ControllerBase
     _jwtTokenService = jwtTokenService;
     _loginRequestValidator = loginRequestValidator;
     _registerRequestValidator = registerRequestValidator;
-
   }
 
+  /// <summary>
+  /// Authenticates user and returns JWT token.
+  /// </summary>
+  /// <remarks>
+  /// Returns 401 if credentials are invalid.
+  /// </remarks>
+  /// <param name="request">Login credentials</param>
+  /// <response code="200">Returns JWT token</response>
+  /// <response code="400">Validation errors</response>
+  /// <response code="401">Invalid credentials</response>
   [HttpPost("login")]
+  [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(List<FluentValidation.Results.ValidationFailure>), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status401Unauthorized)]
   public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
     var validationResult = await _loginRequestValidator.ValidateAsync(request);
@@ -51,8 +64,22 @@ public class AuthController : ControllerBase
     return Ok(ApiResponse<string>.Ok(token, "Login successful"));
   }
 
-
+  /// <summary>
+  /// Registers a new user in the system.
+  /// </summary>
+  /// <remarks>
+  /// Returns 409 if username is already taken.
+  /// </remarks>
+  /// <param name="request">Registration details</param>
+  /// <response code="200">User successfully registered</response>
+  /// <response code="400">Validation errors</response>
+  /// <response code="409">Username already exists</response>
+  /// <response code="500">Unexpected error</response>
   [HttpPost("register")]
+  [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(List<FluentValidation.Results.ValidationFailure>), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status409Conflict)]
+  [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> Register([FromBody] RegisterRequest request)
   {
     var validationResult = await _registerRequestValidator.ValidateAsync(request);
@@ -83,5 +110,4 @@ public class AuthController : ControllerBase
       return StatusCode(500, ApiResponse<string>.Fail("Internal server error"));
     }
   }
-
 }

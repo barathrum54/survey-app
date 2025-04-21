@@ -4,110 +4,130 @@ using Microsoft.AspNetCore.Mvc;
 using SurveyApp.API.DTOs;
 using SurveyApp.API.Services.Interfaces;
 
-namespace SurveyApp.API.Controllers
+namespace SurveyApp.API.Controllers;
+
+[ApiController]
+[Route("survey")]
+[Authorize]
+[Produces("application/json")]
+public class SurveyController : ControllerBase
 {
-  [ApiController]
-  [Route("[controller]")]
-  [Authorize]
-  public class SurveyController : ControllerBase
+  private readonly ISurveyService _surveyService;
+  private readonly IVoteService _voteService;
+
+  public SurveyController(ISurveyService surveyService, IVoteService voteService)
   {
-    private readonly ISurveyService _surveyService;
-    private readonly IVoteService _voteService;
+    _surveyService = surveyService;
+    _voteService = voteService;
+  }
 
-    public SurveyController(ISurveyService surveyService, IVoteService voteService)
-    {
-      _surveyService = surveyService;
-      _voteService = voteService;
-    }
+  /// <summary>
+  /// Creates a new survey with options.
+  /// </summary>
+  /// <param name="request">Survey title and options</param>
+  /// <returns>Created survey details</returns>
+  [HttpPost]
+  [ProducesResponseType(typeof(SurveyWithOptionsResponse), StatusCodes.Status201Created)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
 
-    [HttpPost]
-    public IActionResult CreateSurvey([FromBody] CreateSurveyRequest request)
-    {
-      if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-      try
-      {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var survey = _surveyService.CreateSurvey(request, userId);
-        return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, survey);
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
-        Console.WriteLine("🔥 STACK: " + ex.StackTrace);
-        return StatusCode(500, ex.Message);
-      }
-    }
-
-    // Get Survey by ID
-    [HttpGet("{id}")]
-    [AllowAnonymous]
-    public IActionResult GetSurvey(int id)
-    {
-      var survey = _surveyService.GetSurveyById(id);
-      if (survey == null) return NotFound();
-      return Ok(survey);
-    }
-
-    // Get Surveys by UserId (Created by user)
-    [HttpGet("me")]
-    public IActionResult GetMySurveys()
+    try
     {
       var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-      var surveys = _surveyService.GetSurveysByUserId(userId);
-      return Ok(surveys);
+      var survey = _surveyService.CreateSurvey(request, userId);
+      return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, survey);
     }
-
-    // Delete Survey
-    [HttpDelete("{id}")]
-    public IActionResult DeleteSurvey(int id)
+    catch (Exception ex)
     {
-      try
-      {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        _surveyService.DeleteSurvey(id, userId);
-        return NoContent();
-      }
-      catch (KeyNotFoundException)
-      {
-        return NotFound();
-      }
-      catch (UnauthorizedAccessException)
-      {
-        return Forbid();
-      }
+      Console.WriteLine("🔥 CREATE SURVEY ERROR: " + ex.Message);
+      return StatusCode(500, ex.Message);
     }
+  }
 
-    [HttpGet("{id}/results")]
-    [AllowAnonymous]
-    public IActionResult GetSurveyResults(int id)
+  /// <summary>
+  /// Retrieves a specific survey by ID.
+  /// </summary>
+  [HttpGet("{id}")]
+  [AllowAnonymous]
+  [ProducesResponseType(typeof(SurveyWithOptionsResponse), StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  public IActionResult GetSurvey(int id)
+  {
+    var survey = _surveyService.GetSurveyById(id);
+    if (survey == null) return NotFound();
+    return Ok(survey);
+  }
+
+  /// <summary>
+  /// Gets all surveys created by the current user.
+  /// </summary>
+  [HttpGet("me")]
+  [ProducesResponseType(typeof(IEnumerable<SurveyWithOptionsResponse>), StatusCodes.Status200OK)]
+  public IActionResult GetMySurveys()
+  {
+    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+    var surveys = _surveyService.GetSurveysByUserId(userId);
+    return Ok(surveys);
+  }
+
+  /// <summary>
+  /// Deletes a survey owned by the current user.
+  /// </summary>
+  [HttpDelete("{id}")]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status403Forbidden)]
+  public IActionResult DeleteSurvey(int id)
+  {
+    try
     {
-      var survey = _surveyService.GetSurveyById(id);
-      if (survey == null)
-      {
-        return NotFound(new { message = "Survey not found." });
-      }
-
-      var votes = _voteService.GetVotesBySurveyId(id);
-      var totalVotes = votes.Count();
-
-      if (totalVotes == 0)
-      {
-        return Ok(new List<SurveyResult>());  // No votes, return an empty list
-      }
-
-      var results = votes
-          .GroupBy(vote => vote.OptionId)
-          .Select(group => new SurveyResult
-          {
-            OptionId = group.Key,
-            VoteCount = group.Count(),
-            Percentage = (double)group.Count() / totalVotes * 100
-          })
-          .ToList();
-
-      return Ok(results);
+      var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      _surveyService.DeleteSurvey(id, userId);
+      return NoContent();
     }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
+    catch (UnauthorizedAccessException)
+    {
+      return Forbid();
+    }
+  }
+
+  /// <summary>
+  /// Returns the vote results for a given survey.
+  /// </summary>
+  [HttpGet("{id}/results")]
+  [AllowAnonymous]
+  [ProducesResponseType(typeof(List<SurveyResult>), StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  public IActionResult GetSurveyResults(int id)
+  {
+    var survey = _surveyService.GetSurveyById(id);
+    if (survey == null)
+      return NotFound(new { message = "Survey not found." });
+
+    var votes = _voteService.GetVotesBySurveyId(id);
+    var totalVotes = votes.Count();
+
+    if (totalVotes == 0)
+      return Ok(new List<SurveyResult>());
+
+    var results = votes
+      .GroupBy(vote => vote.OptionId)
+      .Select(group => new SurveyResult
+      {
+        OptionId = group.Key,
+        VoteCount = group.Count(),
+        Percentage = (double)group.Count() / totalVotes * 100
+      })
+      .ToList();
+
+    return Ok(results);
   }
 }
