@@ -61,6 +61,4 @@ Available in public Figma:
 
 ## Project Management / Kanban
 
-Available in public Github Projects:
-
-[https://github.com/users/barathrum54/projects/16](https://github.com/users/barathrum54/projects/16)
+Available in public Github Projects: [https://github.com/users/barathrum54/projects/16](https://github.com/users/barathrum54/projects/16)
