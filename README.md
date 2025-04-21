@@ -25,28 +25,29 @@ Users can:
 
 ## Project Structure
 
+```
 SurveyApp2/
 ├── SurveyApp.API/
-│ ├── Configuration/
-│ ├── Controllers/
-│ ├── DAOs/
-│ ├── DTOs/
-│ ├── LocalPackages/
-│ ├── Middleware/
-│ ├── Models/
-│ ├── Properties/
-│ ├── Services/
-│ ├── SqlMaps/
-│ ├── Validators/
-│ ├── appsettings.json
-│ ├── Program.cs
-│ └── SurveyApp.API.csproj
+│   ├── Configuration/
+│   ├── Controllers/
+│   ├── DAOs/
+│   ├── DTOs/
+│   ├── LocalPackages/
+│   ├── Middleware/
+│   ├── Models/
+│   ├── Properties/
+│   ├── Services/
+│   ├── SqlMaps/
+│   ├── Validators/
+│   ├── appsettings.json
+│   ├── Program.cs
+│   └── SurveyApp.API.csproj
 ├── SurveyApp.API.Tests/
-├── db.sql # MSSQL-compatible schema and seed script
-├── surveydb.bak # MSSQL DB backup with seeded data
+├── db.sql          # MSSQL-compatible schema and seed script
+├── surveydb.bak    # MSSQL DB backup with seeded data
 ├── SurveyApp.sln
 └── .gitignore
-
+```
 ## Testing
 
 Tested with xUnit using a seeded MSSQL instance. Includes unit and integration tests covering registration, login, auth edge cases, survey creation, voting rules, vote submission, and result accuracy (including percentages). Run tests with:
