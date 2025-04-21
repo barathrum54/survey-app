@@ -58,3 +58,9 @@ dotnet test --logger:"console;verbosity=detailed"
 
 Available in public Figma:
 [https://www.figma.com/design/bipcukLDKjcuigB1njVPnE/SurveyApi](https://www.figma.com/design/bipcukLDKjcuigB1njVPnE/SurveyApi)
+
+## Project Management / Kanban
+
+Available in public Github Projects:
+
+[https://github.com/users/barathrum54/projects/16](https://github.com/users/barathrum54/projects/16)
