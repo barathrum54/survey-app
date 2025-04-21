@@ -162,5 +162,51 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
     Assert.False(string.IsNullOrWhiteSpace(loginContent?.Data));
     _output.WriteLine("TOKEN: " + loginContent?.Data);
   }
+  [Fact]
+  public async Task Register_ShouldReturnToken_WhenSuccessful()
+  {
+    var payload = new RegisterRequest
+    {
+      Username = $"user_{Guid.NewGuid():N}",
+      Password = "StrongPass456!",
+      Email = $"user_{Guid.NewGuid():N}@example.com"
+    };
+
+    var response = await _client.PostAsJsonAsync("/auth/register", payload);
+    var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    Assert.NotNull(result);
+    Assert.True(result!.Success);
+    Assert.False(string.IsNullOrWhiteSpace(result.Data));
+    _output.WriteLine("JWT: " + result.Data);
+  }
+  [Fact]
+  public async Task Register_ShouldReturnValidToken_ForAuthenticatedEndpoints()
+  {
+    var payload = new RegisterRequest
+    {
+      Username = $"user_{Guid.NewGuid():N}",
+      Password = "StrongPass456!",
+      Email = $"user_{Guid.NewGuid():N}@example.com"
+    };
+
+    var registerResponse = await _client.PostAsJsonAsync("/auth/register", payload);
+    var result = await registerResponse.Content.ReadFromJsonAsync<ApiResponse<string>>();
+
+    Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
+    Assert.NotNull(result);
+    Assert.True(result!.Success);
+    Assert.False(string.IsNullOrWhiteSpace(result.Data));
+
+    // Use returned token to call an authenticated endpoint
+    _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Data);
+
+    var meSurveysResponse = await _client.GetAsync("/survey/me");
+
+    Assert.Equal(HttpStatusCode.OK, meSurveysResponse.StatusCode);
+  }
+
+
 
 }

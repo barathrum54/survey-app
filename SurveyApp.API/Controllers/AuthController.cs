@@ -64,19 +64,8 @@ public class AuthController : ControllerBase
     return Ok(ApiResponse<string>.Ok(token, "Login successful"));
   }
 
-  /// <summary>
-  /// Registers a new user in the system.
-  /// </summary>
-  /// <remarks>
-  /// Returns 409 if username is already taken.
-  /// </remarks>
-  /// <param name="request">Registration details</param>
-  /// <response code="200">User successfully registered</response>
-  /// <response code="400">Validation errors</response>
-  /// <response code="409">Username already exists</response>
-  /// <response code="500">Unexpected error</response>
   [HttpPost("register")]
-  [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(List<FluentValidation.Results.ValidationFailure>), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status409Conflict)]
   [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
@@ -103,7 +92,8 @@ public class AuthController : ControllerBase
       };
 
       _userDao.Insert(user);
-      return Ok(ApiResponse<object?>.Ok(null, "User registered successfully"));
+      var token = _jwtTokenService.GenerateToken(user.Id, user.Username);
+      return Ok(ApiResponse<string>.Ok(token, "User registered successfully"));
     }
     catch
     {
