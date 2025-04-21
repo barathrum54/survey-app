@@ -116,7 +116,9 @@ public class SurveyController : ControllerBase
     var totalVotes = votes.Count();
 
     if (totalVotes == 0)
-      return Ok(new List<SurveyResult>());
+    {
+      return Ok(ApiResponse<List<SurveyResult>>.Ok([], "No votes yet for this survey."));
+    }
 
     var results = votes
       .GroupBy(vote => vote.OptionId)
@@ -128,6 +130,6 @@ public class SurveyController : ControllerBase
       })
       .ToList();
 
-    return Ok(results);
+    return Ok(ApiResponse<List<SurveyResult>>.Ok(results, "Survey vote results calculated successfully."));
   }
 }

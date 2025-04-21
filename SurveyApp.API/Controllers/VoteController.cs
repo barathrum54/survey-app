@@ -12,7 +12,7 @@ namespace SurveyApp.API.Controllers
   /// Handles voting operations for surveys.
   /// </summary>
   [ApiController]
-  [Route("[controller]")]
+  [Route("vote")]
   [Authorize]
   [Produces("application/json")]
   public class VoteController : ControllerBase
@@ -59,23 +59,6 @@ namespace SurveyApp.API.Controllers
       {
         return BadRequest(new { message = ex.Message });
       }
-    }
-
-    /// <summary>
-    /// Get raw votes for a survey by ID.
-    /// </summary>
-    /// <remarks>
-    /// This endpoint is public and returns all vote objects (not aggregated).
-    /// </remarks>
-    /// <param name="surveyId">Survey ID.</param>
-    /// <returns>List of votes.</returns>
-    [HttpGet("{surveyId}/results")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<Vote>), StatusCodes.Status200OK)]
-    public IActionResult GetSurveyResults(int surveyId)
-    {
-      var votes = _voteService.GetVotesBySurveyId(surveyId);
-      return Ok(votes);
     }
   }
 }
