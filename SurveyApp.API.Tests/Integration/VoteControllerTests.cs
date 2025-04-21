@@ -169,5 +169,137 @@ public class VoteControllerTests : IClassFixture<DatabaseFixture>
     // Assert: Expecting BadRequest due to validation failure
     Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
   }
+  [Fact]
+  public async Task Vote_ShouldReturnBadRequest_WhenOptionIdIsInvalid()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var request = new VoteRequest
+    {
+      SurveyId = 1,
+      OptionId = 0  // Invalid OptionId
+    };
+
+    var response = await _client.PostAsJsonAsync("/vote", request);
+
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+  }
+  [Fact]
+  public async Task Vote_GetSurveyResults_ShouldReturnEmpty_WhenNoVotesExist()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var surveyRequest = new CreateSurveyRequest
+    {
+      Title = "No Votes Survey",
+      Options = new List<string> { "Option A", "Option B" }
+    };
+
+    var createResponse = await _client.PostAsJsonAsync("/survey", surveyRequest);
+    var created = await createResponse.Content.ReadFromJsonAsync<Survey>();
+
+    var resultResponse = await _client.GetAsync($"/vote/{created!.Id}/results");
+
+    resultResponse.EnsureSuccessStatusCode();
+    var results = await resultResponse.Content.ReadFromJsonAsync<List<Vote>>();
+
+    Assert.NotNull(results);
+    Assert.Empty(results);
+  }
+  [Fact]
+  public async Task Vote_ShouldReturnBadRequest_WhenOptionDoesNotBelongToSurvey()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var createRequest = new CreateSurveyRequest
+    {
+      Title = "Survey Mismatch Test",
+      Options = new List<string> { "A", "B" }
+    };
+
+    var surveyResponse = await _client.PostAsJsonAsync("/survey", createRequest);
+    var createdSurvey = await surveyResponse.Content.ReadFromJsonAsync<Survey>();
+
+    var request = new VoteRequest
+    {
+      SurveyId = createdSurvey!.Id,
+      OptionId = 9999  // likely doesn't exist
+    };
+
+    var voteResponse = await _client.PostAsJsonAsync("/vote", request);
+
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, voteResponse.StatusCode);
+  }
+  [Fact]
+  public async Task Vote_ShouldReturnBadRequest_WhenSurveyDoesNotExist()
+  {
+    var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+    var request = new VoteRequest
+    {
+      SurveyId = 9999,  // non-existent
+      OptionId = 1
+    };
+
+    var voteResponse = await _client.PostAsJsonAsync("/vote", request);
+
+    Assert.Equal(System.Net.HttpStatusCode.BadRequest, voteResponse.StatusCode);
+  }
+  [Fact]
+  public async Task GetSurveyResults_ShouldCalculateCorrectPercentages_WithFreshUsers()
+  {
+    var ownerToken = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+
+    var surveyRequest = new CreateSurveyRequest
+    {
+      Title = "Percentage Test Survey",
+      Options = new List<string> { "A", "B" }
+    };
+
+    var createResponse = await _client.PostAsJsonAsync("/survey", surveyRequest);
+    createResponse.EnsureSuccessStatusCode();
+    var survey = await createResponse.Content.ReadFromJsonAsync<Survey>();
+
+    var voters = new[]
+    {
+    new { Vote = 1, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) },
+    new { Vote = 1, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) },
+    new { Vote = 2, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) }
+  };
+
+    foreach (var v in voters)
+    {
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", v.Token);
+      await _client.PostAsJsonAsync("/vote", new VoteRequest { SurveyId = survey!.Id, OptionId = v.Vote });
+    }
+
+    var resultResponse = await _client.GetAsync($"/survey/{survey!.Id}/results");
+    resultResponse.EnsureSuccessStatusCode();
+
+    var results = await resultResponse.Content.ReadFromJsonAsync<List<SurveyResult>>();
+    Assert.NotNull(results);
+    Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 2 && Math.Abs(r.Percentage - 66.66) < 1);
+    Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 33.33) < 1);
+  }
+  [Fact]
+  public async Task CreateVote_ShouldReturnUnauthorized_IfUserNotAuthenticated()
+  {
+    var voteRequest = new VoteRequest
+    {
+      SurveyId = 1,
+      OptionId = 1
+    };
+
+    var response = await _client.PostAsJsonAsync("/vote", voteRequest);
+
+    Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
+  }
+
+
 
 }
