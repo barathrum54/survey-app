@@ -123,6 +123,33 @@ namespace SurveyApp.API.Tests.Integration
 
       Assert.Equal(System.Net.HttpStatusCode.Forbidden, response.StatusCode);
     }
+    [Fact]
+    public async Task GetSurveyResults_ShouldReturnMessage_WhenNoVotesExist()
+    {
+      var token = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+      var request = new CreateSurveyRequest
+      {
+        Title = "Empty Votes Survey",
+        Options = new List<string> { "Option A", "Option B" }
+      };
+
+      var createSurveyResponse = await _client.PostAsJsonAsync("/survey", request);
+      createSurveyResponse.EnsureSuccessStatusCode();
+
+      var created = await createSurveyResponse.Content.ReadFromJsonAsync<SurveyWithOptionsResponse>();
+
+      var resultsResponse = await _client.GetAsync($"/survey/{created!.Id}/results");
+      resultsResponse.EnsureSuccessStatusCode();
+
+      var result = await resultsResponse.Content.ReadFromJsonAsync<ApiResponse<List<SurveyResult>>>();
+      Assert.NotNull(result);
+      Assert.True(result!.Success);
+      Assert.NotNull(result.Data);
+      Assert.Empty(result.Data);
+      Assert.Equal("No votes yet for this survey.", result.Message);
+    }
 
     [Fact]
     public async Task GetSurveyResults_ShouldReturnAggregatedResults()
@@ -167,10 +194,50 @@ namespace SurveyApp.API.Tests.Integration
       resultsResponse.EnsureSuccessStatusCode();
 
       // Deserialize the response into a list of SurveyResult
-      var results = await resultsResponse.Content.ReadFromJsonAsync<List<SurveyResult>>();
+
+      var apiResponse = await resultsResponse.Content.ReadFromJsonAsync<ApiResponse<List<SurveyResult>>>();
+      var results = apiResponse!.Data!; Assert.NotNull(results);
       Assert.NotNull(results);
-      Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option A should have 1 vote (50%)
-      Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01); // Option B should have 1 vote (50%)
+      Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01);
+      Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 50.0) < 0.01);
+    }
+    [Fact]
+    public async Task GetSurveyResults_ShouldCalculateCorrectPercentages_WithFreshUsers()
+    {
+      var ownerToken = await _client.LoginAndGetTokenAsync("admin2", "admin1234");
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+
+      var surveyRequest = new CreateSurveyRequest
+      {
+        Title = "Percentage Test Survey",
+        Options = new List<string> { "A", "B" }
+      };
+
+      var createResponse = await _client.PostAsJsonAsync("/survey", surveyRequest);
+      createResponse.EnsureSuccessStatusCode();
+      var survey = await createResponse.Content.ReadFromJsonAsync<Survey>();
+
+      var voters = new[]
+      {
+    new { Vote = 1, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) },
+    new { Vote = 1, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) },
+    new { Vote = 2, Token = await _client.LoginAndGetTokenAsync($"user_{Guid.NewGuid():N}", "123456", autoRegister: true) }
+  };
+
+      foreach (var v in voters)
+      {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", v.Token);
+        await _client.PostAsJsonAsync("/vote", new VoteRequest { SurveyId = survey!.Id, OptionId = v.Vote });
+      }
+
+      var resultResponse = await _client.GetAsync($"/survey/{survey!.Id}/results");
+      resultResponse.EnsureSuccessStatusCode();
+
+      var apiResponse = await resultResponse.Content.ReadFromJsonAsync<ApiResponse<List<SurveyResult>>>();
+      var results = apiResponse!.Data;
+      Assert.NotNull(results);
+      Assert.Contains(results, r => r.OptionId == 1 && r.VoteCount == 2 && Math.Abs(r.Percentage - 66.66) < 1);
+      Assert.Contains(results, r => r.OptionId == 2 && r.VoteCount == 1 && Math.Abs(r.Percentage - 33.33) < 1);
     }
     [Fact]
     public async Task CreateSurvey_ShouldReturnBadRequest_WhenOptionsAreInvalid()

@@ -12,7 +12,7 @@ namespace SurveyApp.API.Controllers
   /// Handles voting operations for surveys.
   /// </summary>
   [ApiController]
-  [Route("[controller]")]
+  [Route("vote")]
   [Authorize]
   [Produces("application/json")]
   public class VoteController : ControllerBase
